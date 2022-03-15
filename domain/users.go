@@ -18,11 +18,11 @@ type UserDescriptor interface {
 }
 
 type UserService struct {
-	userRepository persist.Repository[*types.User]
+	UserRepository persist.Repository[*types.User]
 }
 
 func (us UserService) Login(ctx context.Context, u types.UserLogin) (types.User, error) {
-	user, err := us.userRepository.Get(ctx, u.Email)
+	user, err := us.UserRepository.Get(ctx, u.Email)
 	if err != nil {
 		return types.User{}, err
 	}
@@ -38,7 +38,7 @@ func (us UserService) Login(ctx context.Context, u types.UserLogin) (types.User,
 			return types.User{}, err
 		}
 		user.Token = token
-		if _, err := us.userRepository.Save(ctx, user); err != nil {
+		if _, err := us.UserRepository.Save(ctx, user); err != nil {
 			return types.User{}, err
 		}
 	}
@@ -50,7 +50,7 @@ func (us UserService) SignUp(ctx context.Context, u types.UserSignUp) (types.Use
 	if err != nil {
 		return types.User{}, err
 	}
-	saved, err := us.userRepository.Save(ctx, &types.User{
+	saved, err := us.UserRepository.Save(ctx, &types.User{
 		Email: u.Email,
 		Profile: types.Profile{
 			Username: u.Username,
@@ -64,7 +64,7 @@ func (us UserService) SignUp(ctx context.Context, u types.UserSignUp) (types.Use
 }
 
 func (us UserService) GetByEmail(ctx context.Context, email string) (types.User, error) {
-	user, err := us.userRepository.Get(ctx, email)
+	user, err := us.UserRepository.Get(ctx, email)
 	if err != nil {
 		return types.User{}, err
 	}
@@ -72,7 +72,7 @@ func (us UserService) GetByEmail(ctx context.Context, email string) (types.User,
 }
 
 func (us UserService) Update(ctx context.Context, u types.User) (types.User, error) {
-	user, err := us.userRepository.Get(ctx, u.Email)
+	user, err := us.UserRepository.Get(ctx, u.Email)
 	if err != nil {
 		return types.User{}, err
 	}
@@ -94,7 +94,7 @@ func (us UserService) Update(ctx context.Context, u types.User) (types.User, err
 	if u.Password != "" {
 		user.Password = u.Password
 	}
-	saved, err := us.userRepository.Save(ctx, user)
+	saved, err := us.UserRepository.Save(ctx, user)
 	if err != nil {
 		return types.User{}, err
 	}

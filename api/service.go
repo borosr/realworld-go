@@ -3,6 +3,7 @@ package api
 import (
 	"log"
 
+	"github.com/borosr/realworld/domain"
 	"github.com/borosr/realworld/lib/api"
 	"github.com/borosr/realworld/persist"
 	"github.com/borosr/realworld/types"
@@ -15,7 +16,9 @@ func Service() {
 	articleRepository := persist.Get[*types.Article]()
 
 	userController{
-		userRepository: userRepository,
+		userService: domain.UserService{
+			UserRepository: userRepository,
+		},
 	}.Init()
 	profilesController{
 		userRepository: userRepository,
