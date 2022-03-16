@@ -33,6 +33,12 @@ func initControllers() {
 		UserRepository:   userRepository,
 		FollowRepository: followRepository,
 	}
+	articleService := domain.ArticleService{
+		ArticleRepository:  articleRepository,
+		CommentRepository:  commentRepository,
+		FavoriteRepository: favoriteRepository,
+		UserService:        userService,
+	}
 
 	userController{
 		userService: userService,
@@ -42,10 +48,7 @@ func initControllers() {
 		userService:    userService,
 	}.Init()
 	articlesController{
-		articleRepository:  articleRepository,
-		commentRepository:  commentRepository,
-		favoriteRepository: favoriteRepository,
-		userRepository:     userRepository,
+		articleService: articleService,
 	}.Init()
 	tagsController{
 		articleRepository: articleRepository,
