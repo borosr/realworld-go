@@ -12,28 +12,42 @@ import (
 func Service() {
 	log.Println("Listening on 18000...")
 
+	initControllers()
+
+	if err := api.ListenAndServe(":18000"); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func initControllers() {
 	userRepository := persist.Get[*types.User]()
 	articleRepository := persist.Get[*types.Article]()
+	followRepository := persist.Get[*types.Follow]()
+	commentRepository := persist.Get[*types.Comment]()
+	favoriteRepository := persist.Get[*types.Favorite]()
+
+	userService := domain.UserService{
+		UserRepository: userRepository,
+	}
+	profileService := domain.ProfileService{
+		UserRepository:   userRepository,
+		FollowRepository: followRepository,
+	}
 
 	userController{
-		userService: domain.UserService{
-			UserRepository: userRepository,
-		},
+		userService: userService,
 	}.Init()
 	profilesController{
-		userRepository: userRepository,
+		profileService: profileService,
+		userService:    userService,
 	}.Init()
 	articlesController{
 		articleRepository:  articleRepository,
-		commentRepository:  persist.Get[*types.Comment](),
-		favoriteRepository: persist.Get[*types.Favorite](),
+		commentRepository:  commentRepository,
+		favoriteRepository: favoriteRepository,
 		userRepository:     userRepository,
 	}.Init()
 	tagsController{
 		articleRepository: articleRepository,
 	}.Init()
-
-	if err := api.ListenAndServe(":18000"); err != nil {
-		log.Fatal(err)
-	}
 }

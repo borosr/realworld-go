@@ -101,3 +101,20 @@ type Profile struct {
 	Image     string `json:"image"`
 	Following bool   `json:"following"`
 }
+
+type Follow struct {
+	From string `json:"followed_by"`
+	To   string `json:"following"`
+}
+
+func (f *Follow) Name() string {
+	return "follow"
+}
+
+func (f *Follow) Key() string {
+	return f.From + "-" + f.To
+}
+
+func (f *Follow) SetKey(id string) {
+	// DO NOTHING
+}

@@ -126,3 +126,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func ListenAndServe(addr string) error {
 	return http.ListenAndServe(addr, mux)
 }
+
+func ListenAndServeTLS(addr, certFile, keyFile string) error {
+	return http.ListenAndServeTLS(addr, certFile, keyFile, mux)
+}

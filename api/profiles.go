@@ -2,18 +2,18 @@ package api
 
 import (
 	"context"
-	"errors"
 	goTypes "go/types"
 	"net/http"
 
+	"github.com/borosr/realworld/domain"
 	"github.com/borosr/realworld/lib/api"
 	"github.com/borosr/realworld/lib/middleware"
-	"github.com/borosr/realworld/persist"
 	"github.com/borosr/realworld/types"
 )
 
 type profilesController struct {
-	userRepository persist.Repository[*types.User]
+	profileService domain.ProfileDescriptor
+	userService    domain.UserDescriptor
 }
 
 func (pc profilesController) Init() {
@@ -41,49 +41,55 @@ func (pc profilesController) get(ctx context.Context, _ goTypes.Nil) (types.Prof
 	if err != nil {
 		return types.ProfileWrapper{}, err
 	}
-	users, err := pc.userRepository.GetFiltered(ctx, func(u *types.User) bool {
-		return u.Username == username
-	})
+	profile, err := pc.profileService.GetByUsername(ctx, username)
 	if err != nil {
 		return types.ProfileWrapper{}, err
 	}
-	if len(users) != 1 {
-		return types.ProfileWrapper{}, errors.New("")
-	}
 	return types.ProfileWrapper{
-		Profile: users[0].Profile,
+		Profile: profile,
 	}, nil
 }
 
 func (pc profilesController) follow(ctx context.Context, _ goTypes.Nil) (types.ProfileWrapper, error) {
-	return pc.setFollow(ctx, true)
-}
-
-func (pc profilesController) unfollow(ctx context.Context, _ goTypes.Nil) (types.ProfileWrapper, error) {
-	return pc.setFollow(ctx, false)
-}
-
-func (pc profilesController) setFollow(ctx context.Context, f bool) (types.ProfileWrapper, error) {
 	username, err := api.PathVariable[string](ctx, "username")
 	if err != nil {
 		return types.ProfileWrapper{}, err
 	}
-	users, err := pc.userRepository.GetFiltered(ctx, func(u *types.User) bool {
-		return u.Username == username
-	})
+	email, err := api.GetValue[string](ctx, "email")
 	if err != nil {
 		return types.ProfileWrapper{}, err
 	}
-	if len(users) != 1 {
-		return types.ProfileWrapper{}, errors.New("")
+	currentUser, err := pc.userService.GetByEmail(ctx, email)
+	if err != nil {
+		return types.ProfileWrapper{}, err
 	}
-	user := users[0]
-	user.Following = f
-	saved, err := pc.userRepository.Save(ctx, user)
+	profile, err := pc.profileService.Follow(ctx, currentUser.Username, username)
 	if err != nil {
 		return types.ProfileWrapper{}, err
 	}
 	return types.ProfileWrapper{
-		Profile: saved.Profile,
+		Profile: profile,
+	}, nil
+}
+
+func (pc profilesController) unfollow(ctx context.Context, _ goTypes.Nil) (types.ProfileWrapper, error) {
+	username, err := api.PathVariable[string](ctx, "username")
+	if err != nil {
+		return types.ProfileWrapper{}, err
+	}
+	email, err := api.GetValue[string](ctx, "email")
+	if err != nil {
+		return types.ProfileWrapper{}, err
+	}
+	currentUser, err := pc.userService.GetByEmail(ctx, email)
+	if err != nil {
+		return types.ProfileWrapper{}, err
+	}
+	profile, err := pc.profileService.Unfollow(ctx, currentUser.Username, username)
+	if err != nil {
+		return types.ProfileWrapper{}, err
+	}
+	return types.ProfileWrapper{
+		Profile: profile,
 	}, nil
 }
