@@ -2,18 +2,18 @@ package middleware
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/borosr/realworld/lib/api"
 	"github.com/borosr/realworld/lib/auth"
+	"github.com/borosr/realworld/lib/broken"
 )
 
 const tokenPrefix = "Token "
 
 var (
-	ErrNotAuthenticated = errors.New("not authenticated")
+	ErrNotAuthenticated = broken.Internal("not authenticated")
 )
 
 var _ api.Middleware = TokenAuthentication

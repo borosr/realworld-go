@@ -2,11 +2,11 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"sort"
 	"time"
 
 	"github.com/borosr/realworld/lib/api"
+	"github.com/borosr/realworld/lib/broken"
 	"github.com/borosr/realworld/persist"
 	persistTypes "github.com/borosr/realworld/persist/types"
 	"github.com/borosr/realworld/types"
@@ -216,7 +216,7 @@ func (as ArticleService) AddFavoriteArticle(ctx context.Context, slug, email str
 		Username: user.Username,
 	}
 	if _, err := as.FavoriteRepository.Get(ctx, favorite.Key()); err == nil {
-		return types.Article{}, errors.New("already added to favorite")
+		return types.Article{}, broken.Internal("already added to favorite")
 	}
 	if _, err := as.FavoriteRepository.Save(ctx, &favorite); err != nil {
 		return types.Article{}, err

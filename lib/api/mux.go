@@ -2,12 +2,13 @@ package api
 
 import (
 	"context"
-	"errors"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/borosr/realworld/lib/broken"
 )
 
 var (
@@ -60,12 +61,12 @@ func (s *Server) Handler(pattern, method string, handler http.Handler) {
 
 func (r route) parse(ctx context.Context, urlPath, method string) (context.Context, error) {
 	if r.method != method {
-		return nil, errors.New("methods not match")
+		return nil, broken.Internal("methods not match")
 	}
 
 	splitURL := strings.Split(urlPath, "/")
 	if len(splitURL) != len(r.pattern) {
-		return nil, errors.New("urls not match")
+		return nil, broken.Internal("urls not match")
 	}
 
 	var matched bool
@@ -84,7 +85,7 @@ func (r route) parse(ctx context.Context, urlPath, method string) (context.Conte
 		}
 	}
 	if !matched {
-		return nil, errors.New("urls not match")
+		return nil, broken.Internal("urls not match")
 	}
 
 	return ctx, nil

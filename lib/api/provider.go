@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/borosr/realworld/lib/broken"
 )
 
 type RequestConstraint interface {
@@ -118,10 +120,11 @@ func processRequest[Request RequestConstraint](body io.Reader) (Request, error) 
 }
 
 func handleResponse(w http.ResponseWriter, err error) {
-	// TODO create custom error
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	var bt broken.Mess
+	if !errors.As(err, &bt) {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	http.Error(w, "Internal server error", http.StatusInternalServerError)
+	msg, code := bt.Format()
+	http.Error(w, msg, code)
 }

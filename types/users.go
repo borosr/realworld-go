@@ -2,9 +2,9 @@ package types
 
 import (
 	"context"
-	"errors"
 
 	"github.com/borosr/realworld/lib/api"
+	"github.com/borosr/realworld/lib/broken"
 )
 
 type UserWrapper[Data UserLogin | User | UserSignUp] struct {
@@ -25,10 +25,10 @@ type UserLogin struct {
 
 func (u UserLogin) Validate(_ context.Context) error {
 	if u.Email == "" {
-		return errors.New("missing email field")
+		return broken.Validation("missing email field")
 	}
 	if u.Password == "" {
-		return errors.New("missing password field")
+		return broken.Validation("missing password field")
 	}
 	return nil
 }
@@ -41,13 +41,13 @@ type UserSignUp struct {
 
 func (u UserSignUp) Validate(_ context.Context) error {
 	if u.Username == "" {
-		return errors.New("missing username field")
+		return broken.Validation("missing username field")
 	}
 	if u.Email == "" {
-		return errors.New("missing email field")
+		return broken.Validation("missing email field")
 	}
 	if u.Password == "" {
-		return errors.New("missing password field")
+		return broken.Validation("missing password field")
 	}
 	return nil
 }
@@ -61,19 +61,19 @@ type User struct {
 
 func (u User) Validate(_ context.Context) error {
 	if u.Username == "" {
-		return errors.New("missing username field")
+		return broken.Validation("missing username field")
 	}
 	if u.Email == "" {
-		return errors.New("missing email field")
+		return broken.Validation("missing email field")
 	}
 	if u.Password == "" {
-		return errors.New("missing password field")
+		return broken.Validation("missing password field")
 	}
 	if u.Image == "" {
-		return errors.New("missing image field")
+		return broken.Validation("missing image field")
 	}
 	if u.Bio == "" {
-		return errors.New("missing bio field")
+		return broken.Validation("missing bio field")
 	}
 	return nil
 }

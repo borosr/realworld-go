@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"errors"
 	"strconv"
+
+	"github.com/borosr/realworld/lib/broken"
 )
 
 const ctxPathVariablePrefix = "path_var_"
@@ -20,7 +21,7 @@ func GetValue[VariableType ContextTypeConstraint](ctx context.Context, key strin
 	var fallbackResult VariableType
 	value := ctx.Value(key)
 	if value == nil {
-		return fallbackResult, errors.New("key not found")
+		return fallbackResult, broken.Internal("key not found")
 	}
 
 	switch (interface{})(fallbackResult).(type) {
@@ -35,5 +36,5 @@ func GetValue[VariableType ContextTypeConstraint](ctx context.Context, key strin
 		return VariableType(res), nil
 	}
 
-	return fallbackResult, errors.New("unable to parse context value")
+	return fallbackResult, broken.Internal("unable to parse context value")
 }

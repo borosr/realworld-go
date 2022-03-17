@@ -1,22 +1,21 @@
 package auth
 
 import (
-	"errors"
-	"fmt"
+	"os"
 
+	"github.com/borosr/realworld/lib/broken"
 	"github.com/golang-jwt/jwt"
 )
 
 var (
-	//hmacSampleSecret       = os.Getenv("JWT_SIGNING_KEY")
-	hmacSampleSecret       = "test_key_123"
-	ErrUnableToVerifyToken = errors.New("unable to verify token")
+	hmacSampleSecret       = os.Getenv("JWT_SIGNING_KEY")
+	ErrUnableToVerifyToken = broken.Forbidden("unable to verify token")
 )
 
 func Verify(token string) (map[string]interface{}, error) {
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, broken.Forbiddenf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(hmacSampleSecret), nil
 	})
@@ -34,5 +33,9 @@ func Verify(token string) (map[string]interface{}, error) {
 
 func Sign(claims map[string]interface{}) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims(claims))
-	return token.SignedString([]byte(hmacSampleSecret))
+	signedString, err := token.SignedString([]byte(hmacSampleSecret))
+	if err != nil {
+		return "", broken.Forbidden(err.Error())
+	}
+	return signedString, nil
 }
