@@ -131,6 +131,7 @@ func (as ArticleService) Update(ctx context.Context, slug string, a types.Articl
 	}
 	if a.TagList != nil {
 		existing.TagList = a.TagList
+		sort.Strings(existing.TagList)
 	}
 	updated, err := as.ArticleRepository.Save(ctx, existing)
 	if err != nil {
@@ -147,12 +148,10 @@ func (as ArticleService) Delete(ctx context.Context, slug string) error {
 }
 
 func (as ArticleService) CreateComment(ctx context.Context, slug string, c types.CommentRequest) (types.CommonComment, error) {
-	var commentID int
-	seq, err := as.CommentRepository.Sequence(ctx, slug)
+	commentID, err := as.CommentRepository.Sequence(ctx, slug)
 	if err != nil {
 		return types.CommonComment{}, err
 	}
-	commentID = int(seq)
 	email, err := api.GetValue[string](ctx, "email")
 	if err != nil {
 		return types.CommonComment{}, err
@@ -164,7 +163,7 @@ func (as ArticleService) CreateComment(ctx context.Context, slug string, c types
 	now := time.Now()
 	saved, err := as.CommentRepository.Save(ctx, &types.Comment{
 		CommonComment: types.CommonComment{
-			ID:        commentID,
+			ID:        int(commentID),
 			CreatedAt: now,
 			UpdatedAt: now,
 			Body:      c.Body,
@@ -249,6 +248,13 @@ func (as ArticleService) DeleteFavoriteArticle(ctx context.Context, slug, email 
 	if err := as.FavoriteRepository.Delete(ctx, favorite.Key()); err != nil {
 		return types.Article{}, err
 	}
+	favoriteCount, err := as.FavoriteRepository.CountFiltered(ctx, func(f *types.Favorite) bool {
+		return f.Slug == slug
+	})
+	if err != nil {
+		return types.Article{}, err
+	}
+	article.FavoritesCount = int(favoriteCount)
 	return *article, nil
 }
 

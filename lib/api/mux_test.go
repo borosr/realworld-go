@@ -16,7 +16,6 @@ func TestBuildParams(t *testing.T) {
 	t.Run("buildParams", func(t *testing.T) {
 		t.Parallel()
 		params := buildParams([]string{"api", "users", "{username}"})
-		t.Log(params)
 		assert.Equal(t, 1, len(params))
 		param, ok := params[2]
 		assert.True(t, ok, "params has 2 as key")
@@ -26,7 +25,6 @@ func TestBuildParams(t *testing.T) {
 	t.Run("buildParams_split", func(t *testing.T) {
 		t.Parallel()
 		params := buildParams(strings.Split("/api/users/{username}", "/"))
-		t.Log(params)
 		assert.Equal(t, 1, len(params))
 		param, ok := params[3]
 		assert.True(t, ok, "params has 3 as key")
@@ -36,7 +34,6 @@ func TestBuildParams(t *testing.T) {
 	t.Run("buildParams_multiple_params", func(t *testing.T) {
 		t.Parallel()
 		params := buildParams([]string{"api", "users", "{username}", "other_thing", "{thing:[a-zA-Z0-9]*}"})
-		t.Log(params)
 		assert.Equal(t, 2, len(params))
 		paramUn, ok := params[2]
 		assert.True(t, ok, "params has 2 as key")
@@ -50,7 +47,6 @@ func TestBuildParams(t *testing.T) {
 	t.Run("buildParams_multiple_params_split", func(t *testing.T) {
 		t.Parallel()
 		params := buildParams(strings.Split("/api/users/{username}/other_thing/{thing:[a-zA-Z0-9]*}", "/"))
-		t.Log(params)
 		assert.Equal(t, 2, len(params))
 		paramUn, ok := params[3]
 		assert.True(t, ok, "params has 2 as key")
