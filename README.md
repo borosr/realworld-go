@@ -5,6 +5,8 @@
 
 ### [Demo](https://demo.realworld.io/)&nbsp;&nbsp;&nbsp;&nbsp;[RealWorld](https://github.com/gothinkster/realworld)
 
+![example workflow](https://github.com/borosr/realworld-go/actions/workflows/go.yml/badge.svg)
+
 
 This codebase was created to demonstrate a fully fledged fullstack application built with Golang net/http (with generics) + BadgerDB including CRUD operations, authentication, routing, pagination, and more.
 
