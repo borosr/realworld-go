@@ -16,6 +16,9 @@ type ContextTypeConstraint interface {
 func PathVariable[VariableType ContextTypeConstraint](ctx context.Context, key string) (VariableType, error) {
 	return GetValue[VariableType](ctx, ctxPathVariablePrefix+key)
 }
+func SetPathVariable[VariableType ContextTypeConstraint](ctx context.Context, key string, value VariableType) context.Context {
+	return context.WithValue(ctx, ctxPathVariablePrefix+key, value)
+}
 
 func GetValue[VariableType ContextTypeConstraint](ctx context.Context, key string) (VariableType, error) {
 	var fallbackResult VariableType
@@ -33,7 +36,7 @@ func GetValue[VariableType ContextTypeConstraint](ctx context.Context, key strin
 		if err != nil {
 			return fallbackResult, err
 		}
-		return VariableType(res), nil
+		return (interface{})(res).(VariableType), nil
 	}
 
 	return fallbackResult, broken.Internal("unable to parse context value")

@@ -76,9 +76,6 @@ func (us UserService) Update(ctx context.Context, u types.User) (types.User, err
 	if err != nil {
 		return types.User{}, err
 	}
-	if u.Email != "" {
-		user.Email = u.Email
-	}
 	if u.Token != "" {
 		user.Token = u.Token
 	}

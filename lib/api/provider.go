@@ -51,7 +51,7 @@ func methodWrapper[Request RequestConstraint, Response ResponseConstraint, Funct
 
 		if _, ok := middlewares[path][r.Method][validate]; ok {
 			if v, ok := (interface{})(req).(Validator); ok {
-				if err := v.Validate(r.Context()); err != nil {
+				if err := v.Validate(ctx); err != nil {
 					handleResponse(w, err)
 					return
 				}
@@ -102,7 +102,6 @@ func provideResponse[Response ResponseConstraint](w http.ResponseWriter, resp Re
 		handleResponse(w, err)
 		return
 	}
-	log.Println(string(rawResponse))
 	w.Header().Set("Content-type", "application/json")
 	if _, err := w.Write(rawResponse); err != nil {
 		handleResponse(w, err)
@@ -112,6 +111,9 @@ func provideResponse[Response ResponseConstraint](w http.ResponseWriter, resp Re
 
 func processRequest[Request RequestConstraint](body io.Reader) (Request, error) {
 	var r Request
+	if body == nil {
+		return r, nil
+	}
 	if err := json.NewDecoder(body).Decode(&r); err != nil && !errors.Is(err, io.EOF) {
 		log.Printf("decode error: %v", err)
 		return r, err

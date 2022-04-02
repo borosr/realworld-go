@@ -15,6 +15,8 @@ var (
 	mu          = sync.RWMutex{}
 	mux         = &Server{}
 	middlewares = make(middlewareCollector) // TODO consider remove last map
+
+	pathVariableRegex = regexp.MustCompile("^{([a-zA-Z0-9-_]+)(:(.*)|)}$")
 )
 
 type middlewareCollector map[string]map[string]map[int][]Middleware
@@ -44,7 +46,7 @@ type route struct {
 
 type routeParam struct {
 	name    string
-	pattern string
+	pattern *regexp.Regexp
 }
 
 type Server struct {
@@ -64,21 +66,21 @@ func (r route) parse(ctx context.Context, urlPath, method string) (context.Conte
 		return nil, broken.Internal("methods not match")
 	}
 
-	splitURL := strings.Split(urlPath, "/")
-	if len(splitURL) != len(r.pattern) {
+	if strings.Count(urlPath, "/")+1 != len(r.pattern) {
 		return nil, broken.Internal("urls not match")
 	}
+	splitURL := strings.Split(urlPath, "/")
 
 	var matched bool
 	for i := 0; i < len(splitURL); i++ {
 		if p, ok := r.params[i]; ok {
-			if p.pattern != "" {
-				matched, _ = regexp.MatchString(p.pattern, splitURL[i])
+			if p.pattern != nil {
+				matched = p.pattern.MatchString(splitURL[i])
 				if matched {
-					ctx = context.WithValue(ctx, ctxPathVariablePrefix+p.name, splitURL[i])
+					ctx = SetPathVariable(ctx, p.name, splitURL[i])
 				}
 			} else {
-				ctx = context.WithValue(ctx, ctxPathVariablePrefix+p.name, splitURL[i])
+				ctx = SetPathVariable(ctx, p.name, splitURL[i])
 			}
 		} else {
 			matched = r.pattern[i] == splitURL[i]
@@ -94,13 +96,13 @@ func (r route) parse(ctx context.Context, urlPath, method string) (context.Conte
 func buildParams(splitPattern []string) map[int]routeParam {
 	params := make(map[int]routeParam)
 	for i, p := range splitPattern {
-		if matches := regexp.MustCompile("^{([a-zA-Z0-9-_]+)(:(.*)|)}$").FindStringSubmatch(p); len(matches) > 1 {
+		if matches := pathVariableRegex.FindStringSubmatch(p); len(matches) > 1 {
 			r := routeParam{
 				name:    matches[1],
-				pattern: "",
+				pattern: nil,
 			}
 			if len(matches) > 2 && matches[2] != "" {
-				r.pattern = matches[2][1:]
+				r.pattern = regexp.MustCompile(matches[2][1:])
 			}
 			params[i] = r
 		}
@@ -113,7 +115,7 @@ func (s *Server) HandleFunc(pattern, method string, handler func(http.ResponseWr
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	for _, route := range s.routes {
+	for _, route := range s.routes { // TODO make it faster with tree
 		ctx, err := route.parse(r.Context(), r.URL.Path, r.Method)
 		if err == nil {
 			route.handler.ServeHTTP(w, r.WithContext(ctx))

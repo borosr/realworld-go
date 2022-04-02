@@ -77,7 +77,7 @@ func Forbidden(msg string) error {
 	return New(TypeForbidden, msg)
 }
 
-func Forbiddenf(format string, args ...interface{}) error {
+func Forbiddenf(format string, args ...any) error {
 	return New(TypeForbidden, fmt.Sprintf(format, args...))
 }
 
